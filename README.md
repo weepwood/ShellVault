@@ -13,11 +13,12 @@
 
 ## 本地运行
 
-仓库中的 `.bootstrap/part-*` 是完整项目源码的校验归档，网页入口会在浏览器中安全解包并运行。也可以执行仓库内的一次性 Bootstrap 工作流，将源码展开为普通文件。
-
-直接预览入口：
+仓库中的 `.bootstrap/part-*` 是完整项目源码的校验归档。根目录网页入口可以直接载入它，也可以执行脚本校验 SHA-256 并展开为普通源码文件：
 
 ```bash
+git clone https://github.com/weepwood/ShellVault.git
+cd ShellVault
+bash scripts/extract-source.sh
 python3 -m http.server 8080
 ```
 
