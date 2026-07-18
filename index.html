@@ -2,89 +2,207 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ShellVault：面向 Linux 初学者的常用命令、部署开发与故障排查学习手册。" />
   <meta name="theme-color" content="#111827" />
   <title>ShellVault · Linux 命令与部署学习手册</title>
-  <style>
-    :root{color-scheme:light dark;font-family:Inter,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0f12;color:#edf0f2}.loading{width:min(520px,calc(100% - 40px));padding:28px;border:1px solid #2b333b;border-radius:18px;background:#13171b;box-shadow:0 24px 80px #0006}.brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800}.mark{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#080b0e;color:#74c69d;font-family:monospace}.loading p{color:#a7afb8}.bar{height:7px;margin-top:22px;overflow:hidden;border-radius:999px;background:#252b31}.bar i{display:block;width:38%;height:100%;border-radius:inherit;background:#74c69d;animation:move 1.15s ease-in-out infinite alternate}.error{color:#ff9b96;white-space:pre-wrap;font:13px/1.6 monospace}@keyframes move{to{transform:translateX(165%)}}
-  </style>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main class="loading">
-    <div class="brand"><span class="mark">$_</span><span>ShellVault</span></div>
-    <p id="status">正在载入 Linux 学习手册与命令库……</p>
-    <div class="bar" id="bar"><i></i></div>
-    <div class="error" id="error"></div>
-  </main>
-  <script>
-    (() => {
-      const base = 'https://raw.githubusercontent.com/weepwood/ShellVault/main/.bootstrap/';
-      const parts = ['part-00','part-01','part-02','part-03','part-04'];
-      const status = document.querySelector('#status');
-      const error = document.querySelector('#error');
-      const decoder = new TextDecoder();
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="ShellVault 首页">
+        <span class="brand-mark" aria-hidden="true">$_</span>
+        <span>
+          <strong>ShellVault</strong>
+          <small>Linux 学习与部署手册</small>
+        </span>
+      </a>
+      <nav class="topnav" aria-label="主导航">
+        <a href="#roadmap">学习路线</a>
+        <a href="#commands">命令库</a>
+        <a href="#recipes">部署实战</a>
+        <a href="#lab">终端练习</a>
+      </nav>
+      <div class="top-actions">
+        <button class="icon-button" id="themeToggle" type="button" aria-label="切换主题" title="切换主题">☾</button>
+        <a class="button button-ghost" href="https://github.com/weepwood/ShellVault" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </header>
 
-      function decodeBase64(text) {
-        const binary = atob(text.replace(/\s/g, ''));
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-        return bytes;
-      }
+    <main id="top">
+      <section class="hero section-wrap">
+        <div class="hero-copy">
+          <span class="eyebrow">从第一次登录服务器，到独立完成项目部署</span>
+          <h1>不靠死记硬背，<br />用真实任务学会 Linux。</h1>
+          <p>围绕文件、权限、进程、网络、日志与部署场景组织知识。每条命令都配有用途、示例、风险提示和可复制片段。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#roadmap">开始学习</a>
+            <a class="button button-secondary" href="#commands">直接查命令</a>
+          </div>
+          <div class="hero-meta" aria-label="项目特点">
+            <span><b id="commandCount">0</b> 条命令</span>
+            <span><b>7</b> 阶段路线</span>
+            <span><b>8</b> 个部署场景</span>
+            <span>纯静态 · 可离线</span>
+          </div>
+        </div>
+        <div class="terminal-card" aria-label="终端示例">
+          <div class="terminal-bar"><span></span><span></span><span></span><em>deploy@server: ~/app</em></div>
+          <div class="terminal-body">
+            <p><i>$</i> ssh deploy@192.168.1.20</p>
+            <p class="terminal-output">Welcome to Ubuntu 24.04 LTS</p>
+            <p><i>$</i> cd /srv/my-app</p>
+            <p><i>$</i> git pull --ff-only</p>
+            <p class="terminal-output">Already up to date.</p>
+            <p><i>$</i> sudo systemctl restart my-app</p>
+            <p><i>$</i> systemctl is-active my-app</p>
+            <p class="terminal-success">active</p>
+            <p><i>$</i> curl -I http://127.0.0.1:8080</p>
+            <p class="terminal-output">HTTP/1.1 200 OK</p>
+            <p class="cursor-line"><i>$</i> <span class="cursor"></span></p>
+          </div>
+        </div>
+      </section>
 
-      async function gunzip(bytes) {
-        if (!('DecompressionStream' in window)) throw new Error('当前浏览器不支持 DecompressionStream，请升级到最新版 Chrome、Edge 或 Firefox。');
-        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-        return new Uint8Array(await new Response(stream).arrayBuffer());
-      }
+      <section class="notice section-wrap" aria-label="学习建议">
+        <strong>先建立安全习惯：</strong>
+        <span>执行陌生命令前先读懂；使用 <code>sudo</code>、<code>rm</code>、<code>chmod</code>、<code>chown</code> 前确认目标；生产服务器修改前先备份并准备回滚。</span>
+      </section>
 
-      function parseTar(bytes) {
-        const files = {};
-        let offset = 0;
-        while (offset + 512 <= bytes.length) {
-          const header = bytes.slice(offset, offset + 512);
-          const name = decoder.decode(header.slice(0, 100)).replace(/\0.*$/, '');
-          if (!name) break;
-          const sizeText = decoder.decode(header.slice(124, 136)).replace(/\0.*$/, '').trim();
-          const size = Number.parseInt(sizeText || '0', 8);
-          offset += 512;
-          if (size > 0) files[name.replace(/^\.\//, '')] = decoder.decode(bytes.slice(offset, offset + size));
-          offset += Math.ceil(size / 512) * 512;
-        }
-        return files;
-      }
+      <section class="section section-wrap" id="roadmap">
+        <div class="section-heading">
+          <div><span class="eyebrow">Learning roadmap</span><h2>Linux 小白快速上手路线</h2></div>
+          <p>按“能完成任务”的顺序学习。完成一个阶段后勾选，进度保存在当前浏览器。</p>
+        </div>
+        <div class="progress-panel">
+          <div class="progress-copy"><span>总学习进度</span><strong id="progressText">0 / 7</strong></div>
+          <div class="progress-track"><span id="progressBar"></span></div>
+          <button class="text-button" id="resetProgress" type="button">重置进度</button>
+        </div>
+        <div class="roadmap-grid" id="roadmapGrid"></div>
+      </section>
 
-      function inlineSite(files) {
-        let html = files['index.html'];
-        if (!html || !files['styles.css'] || !files['commands.js'] || !files['app.js']) throw new Error('项目归档缺少必要文件。');
-        const closeScript = '<' + '/script>';
-        html = html
-          .replace('<link rel="icon" href="./favicon.svg" type="image/svg+xml" />', '')
-          .replace('<link rel="manifest" href="./manifest.webmanifest" />', '')
-          .replace('<link rel="stylesheet" href="./styles.css" />', `<style>${files['styles.css']}</style>`)
-          .replace('<script src="./commands.js">' + closeScript, '<script>' + files['commands.js'] + closeScript)
-          .replace('<script src="./app.js">' + closeScript, '<script>' + files['app.js'] + closeScript);
-        document.open();
-        document.write(html);
-        document.close();
-      }
+      <section class="section section-wrap" id="commands">
+        <div class="section-heading">
+          <div><span class="eyebrow">Command explorer</span><h2>常用命令知识库</h2></div>
+          <p>支持按命令、用途、示例和标签搜索。收藏内容也会保存在当前浏览器。</p>
+        </div>
+        <div class="command-layout">
+          <aside class="filter-panel">
+            <div class="filter-title"><strong>分类</strong><button class="text-button" id="clearFilters" type="button">清除</button></div>
+            <div class="category-list" id="categoryList"></div>
+            <label class="switch-row"><input id="favoriteOnly" type="checkbox" /><span>仅看收藏</span></label>
+            <div class="legend">
+              <span><i class="risk-dot safe"></i>常规</span>
+              <span><i class="risk-dot caution"></i>需谨慎</span>
+              <span><i class="risk-dot danger"></i>高风险</span>
+            </div>
+          </aside>
+          <div class="command-main">
+            <div class="search-panel">
+              <label class="search-box">
+                <span aria-hidden="true">⌕</span>
+                <input id="commandSearch" type="search" placeholder="搜索命令，例如：权限、端口、日志、systemctl、tar..." autocomplete="off" />
+                <kbd>/</kbd>
+              </label>
+              <select id="levelFilter" aria-label="难度筛选">
+                <option value="all">全部难度</option>
+                <option value="入门">入门</option>
+                <option value="常用">常用</option>
+                <option value="进阶">进阶</option>
+              </select>
+            </div>
+            <div class="result-line"><span id="resultCount">0 条结果</span><span>点击命令或示例即可复制</span></div>
+            <div class="command-grid" id="commandGrid"></div>
+            <div class="empty-state" id="emptyState" hidden>
+              <strong>没有找到匹配内容</strong><p>换一个关键词，或清除分类和难度筛选。</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      Promise.all(parts.map(async (part, index) => {
-        status.textContent = `正在载入知识库 ${index + 1} / ${parts.length}……`;
-        const response = await fetch(base + part, { cache: 'no-cache' });
-        if (!response.ok) throw new Error(`无法读取 ${part}：HTTP ${response.status}`);
-        return response.text();
-      }))
-        .then(chunks => decodeBase64(chunks.join('')))
-        .then(gunzip)
-        .then(parseTar)
-        .then(inlineSite)
-        .catch(reason => {
-          document.querySelector('#bar').hidden = true;
-          status.textContent = '载入失败';
-          error.textContent = `${reason.message}\n\n可前往 GitHub 仓库查看项目与重新加载页面。`;
-        });
-    })();
-  </script>
+      <section class="section section-wrap" id="recipes">
+        <div class="section-heading">
+          <div><span class="eyebrow">Deployment recipes</span><h2>项目部署与开发实战</h2></div>
+          <p>把零散命令串成可执行流程。示例默认面向 Ubuntu / Debian，并标注需要替换的变量。</p>
+        </div>
+        <div class="recipe-tabs" id="recipeTabs" role="tablist"></div>
+        <article class="recipe-view" id="recipeView"></article>
+      </section>
+
+      <section class="section section-wrap" id="troubleshooting">
+        <div class="section-heading">
+          <div><span class="eyebrow">Troubleshooting</span><h2>部署失败时，从哪里开始排查</h2></div>
+          <p>不要随机重启。先确定“服务是否运行、端口是否监听、网络是否可达、日志记录了什么”。</p>
+        </div>
+        <div class="diagnostic-flow">
+          <div><b>1</b><strong>进程</strong><code>systemctl status app</code><span>服务有没有启动、是否反复退出</span></div>
+          <div><b>2</b><strong>日志</strong><code>journalctl -u app -n 100</code><span>启动失败、权限、配置与依赖错误</span></div>
+          <div><b>3</b><strong>端口</strong><code>ss -lntp</code><span>程序是否监听正确地址与端口</span></div>
+          <div><b>4</b><strong>本机请求</strong><code>curl -v 127.0.0.1:8080</code><span>先绕开防火墙和反向代理</span></div>
+          <div><b>5</b><strong>反向代理</strong><code>nginx -t</code><span>Nginx 配置、上游地址与错误日志</span></div>
+          <div><b>6</b><strong>系统资源</strong><code>free -h && df -h</code><span>内存、磁盘、inode 与 OOM</span></div>
+        </div>
+      </section>
+
+      <section class="section section-wrap lab-section" id="lab">
+        <div class="section-heading">
+          <div><span class="eyebrow">Practice lab</span><h2>浏览器终端练习</h2></div>
+          <p>这是安全的模拟环境，不会操作你的电脑。练习 <code>pwd</code>、<code>ls</code>、<code>cd</code>、<code>cat</code>、<code>mkdir</code>、<code>touch</code> 和 <code>clear</code>。</p>
+        </div>
+        <div class="lab-grid">
+          <div class="simulator">
+            <div class="terminal-bar"><span></span><span></span><span></span><em>shellvault-lab</em></div>
+            <div class="sim-output" id="simOutput" aria-live="polite"></div>
+            <form class="sim-input-row" id="simForm">
+              <span id="simPrompt">student@shellvault:~$</span>
+              <input id="simInput" autocomplete="off" spellcheck="false" aria-label="模拟终端命令" />
+            </form>
+          </div>
+          <aside class="challenge-card">
+            <span class="eyebrow">当前挑战</span>
+            <h3 id="challengeTitle">找到项目目录</h3>
+            <p id="challengeText">先查看当前目录内容，然后进入 projects 目录。</p>
+            <div class="challenge-status" id="challengeStatus">等待操作</div>
+            <button class="button button-secondary" id="nextChallenge" type="button">换一个挑战</button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section section-wrap" id="quiz">
+        <div class="section-heading">
+          <div><span class="eyebrow">Knowledge check</span><h2>快速自测</h2></div>
+          <p>重点检查是否理解命令的语义与排查顺序，而不是只记住拼写。</p>
+        </div>
+        <div class="quiz-card" id="quizCard"></div>
+      </section>
+
+      <section class="section section-wrap principles">
+        <div class="section-heading">
+          <div><span class="eyebrow">Mental model</span><h2>真正需要掌握的 6 个 Linux 模型</h2></div>
+        </div>
+        <div class="principle-grid">
+          <article><span>01</span><h3>一切皆文件</h3><p>普通文件、目录、设备、进程信息和很多内核接口，都能通过统一的文件式接口理解。</p></article>
+          <article><span>02</span><h3>输入 / 输出 / 管道</h3><p>命令读取标准输入，产生标准输出与错误输出；使用管道把简单工具组合成工作流。</p></article>
+          <article><span>03</span><h3>用户、组与权限</h3><p>系统安全依赖身份和最小权限。能不用 root，就不要让应用长期以 root 运行。</p></article>
+          <article><span>04</span><h3>进程与服务</h3><p>进程是运行中的程序；systemd 负责让服务可启动、重启、开机自启并集中记录日志。</p></article>
+          <article><span>05</span><h3>端口与网络路径</h3><p>“网页打不开”可能发生在程序监听、主机防火墙、云安全组、DNS、TLS 或反向代理任一层。</p></article>
+          <article><span>06</span><h3>可观测与可回滚</h3><p>稳定部署不是“成功运行一次”，而是有日志、健康检查、监控、备份和可验证的回滚路径。</p></article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer section-wrap">
+      <div><strong>ShellVault</strong><span>面向部署与开发实践的 Linux 学习手册</span></div>
+      <div><a href="#top">返回顶部</a><a href="https://github.com/weepwood/ShellVault" target="_blank" rel="noreferrer">查看源码</a></div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./commands.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

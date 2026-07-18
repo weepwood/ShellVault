@@ -2,40 +2,63 @@
 
 面向 Linux 初学者、开发者与部署实践的交互式学习网站。目标不是堆砌命令，而是帮助使用者从第一次进入终端，逐步完成项目部署、服务管理和故障排查。
 
-## 主要内容
+## 在线功能
 
 - 7 阶段 Linux 学习路线与浏览器本地进度
-- 90+ 常用命令，覆盖目录、文件、文本、权限、进程、网络、软件包、磁盘、压缩、SSH、系统信息和 Shell
+- 90+ 常用命令，按目录、文件、文本、权限、进程、网络等主题分类
 - 命令全文搜索、难度筛选、收藏和一键复制
-- 首次登录、静态网站、Node.js、FastAPI、Spring Boot、Nginx、Docker Compose、PostgreSQL 备份恢复等部署流程
-- 浏览器安全模拟终端与 Linux 基础自测
-- 深色 / 浅色主题与移动端响应式布局
+- 首次登录、静态网页、Node.js、FastAPI、Spring Boot、Nginx、Docker Compose、PostgreSQL 备份恢复等部署流程
+- 安全的浏览器模拟终端
+- Linux 基础知识自测
+- 深色 / 浅色主题与响应式界面
+- 无框架、无构建依赖，可直接静态部署
 
 ## 本地运行
 
-仓库中的 `.bootstrap/part-*` 是完整项目源码的校验归档。根目录网页入口可以直接载入它，也可以执行脚本校验 SHA-256 并展开为普通源码文件：
-
 ```bash
-git clone https://github.com/weepwood/ShellVault.git
-cd ShellVault
-bash scripts/extract-source.sh
+# 方法一：Python
 python3 -m http.server 8080
+
+# 方法二：Node.js
+npx serve .
 ```
 
-然后打开 `http://localhost:8080`。
+打开 `http://localhost:8080`。
 
-## 学习建议
+也可以直接双击 `index.html`，但使用本地 HTTP 服务更接近真实部署环境。
 
-1. 先完成终端、路径和文件操作，再学习权限、进程与网络。
-2. 把每条命令放进真实任务中练习，不以记忆参数数量为目标。
-3. 对 `sudo`、`rm`、`chmod`、`chown`、`rsync --delete`、防火墙和数据库恢复保持谨慎。
-4. 修改生产环境前先备份、记录现状并准备回滚。
-5. 故障排查遵循：服务状态 → 日志 → 监听端口 → 本机请求 → 反向代理 → 系统资源。
+## 项目结构
 
-## 技术说明
+```text
+ShellVault/
+├── index.html              # 页面结构
+├── styles.css              # 设计系统与响应式布局
+├── commands.js             # 命令、路线、部署场景与测验数据
+├── app.js                  # 搜索、收藏、进度、终端模拟等交互
+├── favicon.svg
+├── manifest.webmanifest
+├── netlify.toml
+└── README.md
+```
 
-项目是纯静态网站，不依赖后端、数据库或构建工具，可部署到 Netlify、GitHub Pages、Nginx 等静态托管平台。
+## Netlify 部署
+
+项目是纯静态站点，发布目录为仓库根目录：
+
+```toml
+[build]
+  publish = "."
+```
+
+连接 GitHub 仓库后，Netlify 可以在每次推送到默认分支时自动发布。
+
+## 内容使用原则
+
+- 不理解的命令不要直接在生产服务器执行。
+- 对 `sudo`、`rm`、`chmod`、`chown`、`rsync --delete`、防火墙和数据库恢复操作保持谨慎。
+- 修改前备份，发布前准备回滚，故障时先观察日志和状态。
+- 不要把密码、Token、私钥或生产环境配置提交到 Git 仓库。
 
 ## License
 
-MIT
+[MIT](./LICENSE)
