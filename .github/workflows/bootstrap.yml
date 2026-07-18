@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - ".bootstrap/**"
+  pull_request:
+    paths:
+      - ".bootstrap/**"
   workflow_dispatch:
 
 permissions:
@@ -15,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
       - name: Reconstruct verified project archive
         shell: bash
