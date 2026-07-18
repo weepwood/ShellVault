@@ -1,0 +1,44 @@
+name: Bootstrap ShellVault
+
+on:
+  push:
+    paths:
+      - ".bootstrap/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct verified project archive
+        shell: bash
+        run: |
+          if [ ! -d .bootstrap ]; then
+            echo "Project already bootstrapped."
+            exit 0
+          fi
+
+          cat .bootstrap/part-* > /tmp/shellvault.b64
+          base64 -d /tmp/shellvault.b64 > /tmp/shellvault.tar.gz
+          echo "74681c34e5111fddd532b22de8ce6a2f072c5b31834f03b35c7d1842743f3310  /tmp/shellvault.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/shellvault.tar.gz -C .
+          rm -rf .bootstrap .gitkeep
+
+      - name: Publish source files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "feat: publish ShellVault Linux learning site"
+            git push
+          fi
