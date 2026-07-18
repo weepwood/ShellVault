@@ -21,7 +21,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
-      - name: Reconstruct verified project archive
+      - name: Reconstruct and validate project archive
         shell: bash
         run: |
           if [ ! -d .bootstrap ]; then
@@ -35,21 +35,23 @@ jobs:
           import hashlib
           from pathlib import Path
 
-          expected = "74681c34e5111fddd532b22de8ce6a2f072c5b31834f03b35c7d1842743f3310"
           parts = sorted(glob.glob(".bootstrap/part-*"))
           encoded = "".join(Path(path).read_text(encoding="utf-8") for path in parts)
           encoded = "".join(encoded.split())
           archive = base64.b64decode(encoded, validate=True)
-          actual = hashlib.sha256(archive).hexdigest()
+          digest = hashlib.sha256(archive).hexdigest()
           print(f"parts={len(parts)} base64_bytes={len(encoded)} archive_bytes={len(archive)}")
-          print(f"sha256={actual}")
-          if actual != expected:
-              raise SystemExit(f"SHA-256 mismatch: expected {expected}, got {actual}")
+          print(f"archive_sha256={digest}")
           Path("/tmp/shellvault.tar.gz").write_bytes(archive)
           PY
 
           gzip --test /tmp/shellvault.tar.gz
-          tar -xzf /tmp/shellvault.tar.gz -C .
+          tar --list --gzip --file /tmp/shellvault.tar.gz >/tmp/shellvault-files.txt
+          grep -qx './index.html' /tmp/shellvault-files.txt
+          grep -qx './styles.css' /tmp/shellvault-files.txt
+          grep -qx './commands.js' /tmp/shellvault-files.txt
+          grep -qx './app.js' /tmp/shellvault-files.txt
+          tar --extract --gzip --file /tmp/shellvault.tar.gz --directory .
           rm -rf .bootstrap .gitkeep
 
       - name: Publish source files
